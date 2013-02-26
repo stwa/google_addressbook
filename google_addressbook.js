@@ -7,7 +7,7 @@
 if (window.rcmail) {
   rcmail.addEventListener('init', function(evt) {
     var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
-    button.addClass('button checkmail').html(rcmail.gettext('Sync Google', 'google_addressbook'));
+    button.addClass('button checkmail').html(rcmail.gettext('sync', 'google_addressbook'));
     button.bind('click', function(e){ return rcmail.command('google_addressbook.sync', this); });
   
     rcmail.add_element(button, 'toolbar');

@@ -24,9 +24,10 @@ class google_addressbook extends rcube_plugin
   function init()
   {
     $rcmail = rcmail::get_instance();
+    $this->add_texts('localization/', true);
     
     $this->client = new Google_Client();
-    $this->client->setApplicationName('Google Contacts PHP Sample');
+    $this->client->setApplicationName('rc-google-addressbook');
     $this->client->setScopes("http://www.google.com/m8/feeds/");
     $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
     $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
@@ -65,7 +66,7 @@ class google_addressbook extends rcube_plugin
     if($action == 'sync') {
       $this->google_sync_contacts();
     }
-    $rcmail->output->command('plugin.finished', array('message' => 'Done.'));
+    $rcmail->output->command('plugin.finished', array('message' => $this->gettext('done')));
   }
 
   function preferences_list($params)
@@ -78,20 +79,20 @@ class google_addressbook extends rcube_plugin
       $field_id = 'rc_use_plugin';
       $checkbox = new html_checkbox(array('name' => $field_id, 'id' => $field_id, 'value' => 1));
       $params['blocks'][$this->id]['options'][$field_id] = array(
-        'title' => html::label($field_id, "Use $this->abook_name"),
+        'title' => html::label($field_id, $this->gettext('use').$this->abook_name),
         'content' => $checkbox->show($rcmail->config->get('use_google_abook'))
       );
 
       $field_id = 'rc_google_auth';
       $input_auth = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 35));
       $params['blocks'][$this->id]['options'][$field_id] = array(
-        'title' => html::label($field_id, "Google Auth Key"),
+        'title' => html::label($field_id, $this->gettext('authcode')),
         'content' => $input_auth->show($rcmail->config->get('google_auth_key'))
       );
 
       $params['blocks'][$this->id]['options']['link'] = array(
         'title' => html::span('', ''),
-        'content' => html::a(array('href' => $this->client->createAuthUrl(), 'target' => '_blank'), 'Click here to get the auth key')
+        'content' => html::a(array('href' => $this->client->createAuthUrl(), 'target' => '_blank'), $this->gettext('authcodelink'))
       );
     }
     return $params;
@@ -180,14 +181,14 @@ class google_addressbook extends rcube_plugin
     $num_entries = count($xml['entry']);
     
     write_log('response', 'getting contact: '.print_r($val->getResponseBody(), true));
-    $rcmail->output->show_message($num_entries.' contacts found.', 'confirmation');
+    $rcmail->output->show_message($num_entries.$this->gettext('contactsfound'), 'confirmation');
 
     $backend = new google_addressbook_backend($this->abook_name, $rcmail->db, $rcmail->user->ID);
     $backend->delete_all();
     
     foreach($xml['entry'] as $entry) {
       write_log('google_addressbook', 'getting contact: '.$entry['title'][0]['@text']);
-      write_log('google_addressbook', 'getting contact: '.print_r($entry,true));
+      //write_log('google_addressbook', 'getting contact: '.print_r($entry,true));
       $record = array();
       $name = $entry['gd:name'][0];
       $record['name']= $name['gd:fullName'][0]['@text'];
@@ -197,7 +198,7 @@ class google_addressbook extends rcube_plugin
       $record['prefix'] = $name['gd:namePrefix'][0]['@text'];
       $record['suffix'] = $name['gd:nameSuffix'][0]['@text'];
       if(empty($record['name'])) {
-        //$record['name'] = $entry['title'][0]['@text'];
+        $record['name'] = $entry['title'][0]['@text'];
       }
 
       foreach($entry['gd:email'] as $email) {
