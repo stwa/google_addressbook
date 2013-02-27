@@ -21,9 +21,8 @@ This plugin lets you sync your Google Addressbook in readonly mode with Roundcub
 Empty.
 
 ## Todo
-* Enable/Disable plugin in Roundcube setting tab
-* Sync when user logs in
-* Autosync only once per session
+* Login autosync too slow while waiting for contacts to load
+* Add possibility to revoke tokens
 
 ## Contact
 Author: Stefan Wagner (stw@cannycode.de)

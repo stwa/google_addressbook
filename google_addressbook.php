@@ -221,7 +221,9 @@ class google_addressbook extends rcube_plugin
     write_log('google_addressbook', 'google_sync_contacts');
     $rcmail = rcmail::get_instance();
     $code = $rcmail->config->get($this->settings_key_auth_code);
-    
+ 
+    $_SESSION['google_addressbook_synced'] = true;
+   
     if(!$this->google_authenticate($code)) {
       return;
     }
@@ -281,8 +283,6 @@ class google_addressbook extends rcube_plugin
 
       $backend->insert($record, false);
     }
-
-    $_SESSION['google_addressbook_synced'] = true;
   }
 
   function contact_create($params)
