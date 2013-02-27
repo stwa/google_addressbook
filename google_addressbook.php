@@ -20,8 +20,9 @@ class google_addressbook extends rcube_plugin
   private $abook_id = 'google_addressbook';
   private $abook_name = 'Google Addressbook';
   private $settings_key_token = 'google_current_token';
-  private $settings_use_plugin = 'google_use_addressbook';
-  private $settings_auth_code = 'google_auth_code';
+  private $settings_key_use_plugin = 'google_use_addressbook';
+  private $settings_key_auto_sync = 'google_autosync';
+  private $settings_key_auth_code = 'google_auth_code';
   private $client;
 
   function init()
@@ -49,15 +50,12 @@ class google_addressbook extends rcube_plugin
     $sources[] = $this->abook_id;
     $rcmail->config->set('autocomplete_addressbooks', $sources);
 
-    // add sync button to toolbar
-    $button_sync = array('command' => 'google_addressbook.sync',
-                         'type' => 'link', 
-                         'label' => 'google_addressbook.sync', 
-                         'title' => 'syncnow', 
-                         'class' => 'button checkmail');
-    $this->add_button($button_sync, 'toolbar');
-
     $this->include_script('google_addressbook.js');
+
+    if($this->is_enabled() && $this->is_autosync()
+      && !isset($_SESSION['google_addressbook_synced'])) {
+      $this->google_sync_contacts();
+    }
   }
 
   function init_client()
@@ -68,7 +66,7 @@ class google_addressbook extends rcube_plugin
     $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
     $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
     $this->client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
-    $this->client->setAccessType('online');
+    $this->client->setAccessType('offline');
   }
 
   function get_current_token($from_db = false)
@@ -83,6 +81,18 @@ class google_addressbook extends rcube_plugin
     if(!rcmail::get_instance()->user->save_prefs($prefs)) {
       // TODO: error handling
     }
+  }
+
+  function is_enabled()
+  {
+    $val = rcmail::get_instance()->config->get($this->settings_key_use_plugin);
+    return (bool)$val;
+  }
+
+  function is_autosync()
+  {
+    $val = rcmail::get_instance()->config->get($this->settings_key_auto_sync);
+    return (bool)$val;
   }
 
   function handle_ajax_requests()
@@ -107,6 +117,13 @@ class google_addressbook extends rcube_plugin
         'content' => $checkbox->show($rcmail->config->get($this->settings_key_use_plugin))
       );
 
+      $field_id = 'rc_google_autosync';
+      $checkbox = new html_checkbox(array('name' => $field_id, 'id' => $field_id, 'value' => 1));
+      $params['blocks'][$this->id]['options'][$field_id] = array(
+        'title' => html::label($field_id, $this->gettext('autosync')),
+        'content' => $checkbox->show($rcmail->config->get($this->settings_key_auto_sync))
+      );
+
       $field_id = 'rc_google_authcode';
       $input_auth = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 45));
       $params['blocks'][$this->id]['options'][$field_id] = array(
@@ -126,6 +143,7 @@ class google_addressbook extends rcube_plugin
   {
     if($params['section'] == 'addressbook') {
       $params['prefs'][$this->settings_key_use_plugin] = isset($_POST['rc_use_plugin']) ? true : false;
+      $params['prefs'][$this->settings_key_auto_sync] = isset($_POST['rc_google_autosync']) ? true : false;
       $params['prefs'][$this->settings_key_auth_code] = get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
     }
     return $params;
@@ -134,7 +152,7 @@ class google_addressbook extends rcube_plugin
   // roundcube collects information about available addressbooks
   function addressbooks_list($params)
   {
-    if(true) {
+    if($this->is_enabled()) {
       // TODO: only if plugin enabled
       $params['sources'][$this->id] = array('id' => $this->abook_id, 
                                             'name' => $this->abook_name, 
@@ -152,19 +170,15 @@ class google_addressbook extends rcube_plugin
     if($params['id'] == $this->abook_id) {
       //$rcmail->output->command('enable_command', 'add', false);
       //$rcmail->output->command('enable_command', 'import', false);
-      $params['instance'] = new google_addressbook_backend($this->abook_name, $rcmail->db, $rcmail->user->ID);
+      $params['instance'] = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
       $params['writable'] = false;
-    }
-
-    if(isset($_GET['sync'])) {
-      $this->google_sync_contacts();
     }
 
     return $params;
   }
 
   function google_authenticate($code)
-  { //TODO: unauth on logout
+  {
     $rcmail = rcmail::get_instance();
 
     $token = $this->get_current_token();
@@ -172,34 +186,41 @@ class google_addressbook extends rcube_plugin
       $this->client->setAccessToken($token);
     }
 
-    if($this->client->getAccessToken() == null) {
-      try {
+    $success = false;
+    write_log('google_addressbook', print_r(json_decode($this->client->getAccessToken()),true));
+    try {
+      if($this->client->getAccessToken() == null) {
         $this->client->authenticate($code);
-        $token = $this->client->getAccessToken();
-        $this->save_current_token($token);
-      } catch(Exception $e) {
-        $rcmail->output->show_message($e->getMessage(), 'error');
-        return false;
-      }
-    } else if($this->client->isAccessTokenExpired()) {
-        // get the current tokens...
+        $success = true;
+      } else if($this->client->isAccessTokenExpired()) {
         $tokens = json_decode($this->client->getAccessToken());
-        $this->client->refreshToken($token->refresh_token);
-        // ... and now save the new tokens
-        $this->save_current_token($this->client->getAccessToken());
-        //$rcmail->output->show_message('Expired!', 'error');
-        return true;
+        if(empty($token->refresh_token)) {
+          // TODO: what to do now?
+        } else {
+          $this->client->refreshToken($token->refresh_token);
+          $success = true;
+        }
+      } else {
+        // token valid, nothing to do.
+        $success = true;
+      }
+    } catch(Exception $e) {
+      $rcmail->output->show_message($e->getMessage(), 'error');
     }
-    $this->save_current_token($token);
 
-    return true;
+    if($success) {
+      $token = $this->client->getAccessToken();
+      $this->save_current_token($token);
+    }
+
+    return $success;
   }
 
   function google_sync_contacts()
   {
     write_log('google_addressbook', 'google_sync_contacts');
     $rcmail = rcmail::get_instance();
-    $code = $rcmail->config->get('google_auth_key');
+    $code = $rcmail->config->get($this->settings_key_auth_code);
     
     if(!$this->google_authenticate($code)) {
       return;
@@ -213,7 +234,7 @@ class google_addressbook extends rcube_plugin
     write_log('response', 'getting contact: '.print_r($val->getResponseBody(), true));
     $rcmail->output->show_message($num_entries.$this->gettext('contactsfound'), 'confirmation');
 
-    $backend = new google_addressbook_backend($this->abook_name, $rcmail->db, $rcmail->user->ID);
+    $backend = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
     $backend->delete_all();
     
     foreach($xml['entry'] as $entry) {
@@ -247,9 +268,12 @@ class google_addressbook extends rcube_plugin
         $rel = $link['@attributes']['rel'];
         $href = $link['@attributes']['href'];
         if($rel == 'http://schemas.google.com/contacts/2008/rel#photo') {
-          $resp = $this->client->getIo()->authenticatedRequest(new Google_HttpRequest($href));
-          if($resp->getResponseHttpCode() == 200) {
-            $record['photo'] = $resp->getResponseBody();
+          // etag is only set if image is available
+          if(isset($link['@attributes']['etag'])) {
+            $resp = $this->client->getIo()->authenticatedRequest(new Google_HttpRequest($href));
+            if($resp->getResponseHttpCode() == 200) {
+              $record['photo'] = $resp->getResponseBody();
+            }
           }
           break;
         }
@@ -257,6 +281,8 @@ class google_addressbook extends rcube_plugin
 
       $backend->insert($record, false);
     }
+
+    $_SESSION['google_addressbook_synced'] = true;
   }
 
   function contact_create($params)
