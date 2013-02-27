@@ -63,8 +63,8 @@ class google_addressbook extends rcube_plugin
     $this->client = new Google_Client();
     $this->client->setApplicationName('rc-google-addressbook');
     $this->client->setScopes("http://www.google.com/m8/feeds/");
-    $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
-    $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
+    $this->client->setClientId('212349955974.apps.googleusercontent.com');
+    $this->client->setClientSecret('7GZeYctgt3EPRz2x8i3pWfrb');
     $this->client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
     $this->client->setAccessType('offline');
   }
@@ -142,9 +142,15 @@ class google_addressbook extends rcube_plugin
   function preferences_save($params)
   {
     if($params['section'] == 'addressbook') {
+      $old_prefs = rcmail::get_instance()->user->get_prefs();
+      $new_code = get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
+      if($old_prefs[$this->settings_key_auth_code] != $new_code) {
+        // token is no longer valid, so delete it
+        $this->save_current_token(null);
+      }
       $params['prefs'][$this->settings_key_use_plugin] = isset($_POST['rc_use_plugin']) ? true : false;
       $params['prefs'][$this->settings_key_auto_sync] = isset($_POST['rc_google_autosync']) ? true : false;
-      $params['prefs'][$this->settings_key_auth_code] = get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
+      $params['prefs'][$this->settings_key_auth_code] = $new_code;
     }
     return $params;
   }
@@ -195,7 +201,7 @@ class google_addressbook extends rcube_plugin
       } else if($this->client->isAccessTokenExpired()) {
         $tokens = json_decode($this->client->getAccessToken());
         if(empty($token->refresh_token)) {
-          // TODO: what to do now?
+          // this only happens if google client id is wrong ang access type != offline
         } else {
           $this->client->refreshToken($token->refresh_token);
           $success = true;
