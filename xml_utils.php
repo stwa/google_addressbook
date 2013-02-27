@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * XML utils class used to turn an XML string into an array.
+ * This code is based on the code from "gaarf" and was slightly modified to fit my needs.
+ * See https://github.com/gaarf/XML-string-to-PHP-array
+ *
+ * @version 1.0
+ * @author Stefan L. Wagner
+ */
+
 class xml_utils
 {
 
