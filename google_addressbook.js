@@ -4,6 +4,7 @@
  * @version 1.0
  * @author Stefan L. Wagner
  */
+
 if (window.rcmail) {
   rcmail.addEventListener('init', function(evt) {
     var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
