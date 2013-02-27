@@ -10,7 +10,6 @@
  * @url http://roundcube.net/plugins/google_addressbook
  */
 
-// php5-curl extension required!
 require_once(dirname(__FILE__) . '/google-api-php-client/src/Google_Client.php');
 require_once(dirname(__FILE__) . '/google_addressbook_backend.php');
 require_once(dirname(__FILE__) . '/xml_utils.php');
@@ -20,25 +19,20 @@ class google_addressbook extends rcube_plugin
   public $task = 'mail|addressbook|settings';
   private $abook_id = 'google_addressbook';
   private $abook_name = 'Google Addressbook';
-  private $token_settings_key = 'google_current_token';
+  private $settings_key_token = 'google_current_token';
+  private $settings_use_plugin = 'google_use_addressbook';
+  private $settings_auth_code = 'google_auth_code';
   private $client;
 
   function init()
   {
     $rcmail = rcmail::get_instance();
+
     $this->add_texts('localization/', true);
-    
     $this->load_config('config.inc.php.dist');
     $this->load_config('config.inc.php');
 
-    $this->client = new Google_Client();
-    $this->client->setApplicationName('rc-google-addressbook');
-    $this->client->setScopes("http://www.google.com/m8/feeds/");
-    $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
-    $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
-    $this->client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
-    $this->client->setAccessType('online');
-
+    // register hooks
     $this->add_hook('preferences_list', array($this, 'preferences_list'));
     $this->add_hook('preferences_save', array($this, 'preferences_save'));
     $this->add_hook('addressbooks_list', array($this, 'addressbooks_list'));
@@ -48,23 +42,44 @@ class google_addressbook extends rcube_plugin
     $this->add_hook('contact_delete', array($this, 'contact_delete'));
     $this->register_action('plugin.google_addressbook', array($this, 'handle_ajax_requests'));
 
+    $this->init_client();
+
     // add google addressbook to autocomplete addressbooks
     $sources = (array) $rcmail->config->get('autocomplete_addressbooks', 'sql');
     $sources[] = $this->abook_id;
     $rcmail->config->set('autocomplete_addressbooks', $sources);
-    
+
+    // add sync button to toolbar
+    $button_sync = array('command' => 'google_addressbook.sync',
+                         'type' => 'link', 
+                         'label' => 'google_addressbook.sync', 
+                         'title' => 'syncnow', 
+                         'class' => 'button checkmail');
+    $this->add_button($button_sync, 'toolbar');
+
     $this->include_script('google_addressbook.js');
+  }
+
+  function init_client()
+  {
+    $this->client = new Google_Client();
+    $this->client->setApplicationName('rc-google-addressbook');
+    $this->client->setScopes("http://www.google.com/m8/feeds/");
+    $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
+    $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
+    $this->client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
+    $this->client->setAccessType('online');
   }
 
   function get_current_token($from_db = false)
   {
     $prefs = rcmail::get_instance()->user->get_prefs();
-    return $prefs[$this->token_settings_key];
+    return $prefs[$this->settings_key_token];
   }
   
   function save_current_token($token)
   {
-    $prefs = array($this->token_settings_key => $token);
+    $prefs = array($this->settings_key_token => $token);
     if(!rcmail::get_instance()->user->save_prefs($prefs)) {
       // TODO: error handling
     }
@@ -72,12 +87,11 @@ class google_addressbook extends rcube_plugin
 
   function handle_ajax_requests()
   {
-    $rcmail = rcmail::get_instance();
     $action = get_input_value('_act', RCUBE_INPUT_GPC);
     if($action == 'sync') {
       $this->google_sync_contacts();
     }
-    $rcmail->output->command('plugin.finished', array('message' => $this->gettext('done')));
+    rcmail::get_instance()->output->command('plugin.google_addressbook_finished', array('message' => $this->gettext('done')));
   }
 
   function preferences_list($params)
@@ -90,14 +104,14 @@ class google_addressbook extends rcube_plugin
       $checkbox = new html_checkbox(array('name' => $field_id, 'id' => $field_id, 'value' => 1));
       $params['blocks'][$this->id]['options'][$field_id] = array(
         'title' => html::label($field_id, $this->gettext('use').$this->abook_name),
-        'content' => $checkbox->show($rcmail->config->get('use_google_abook'))
+        'content' => $checkbox->show($rcmail->config->get($this->settings_key_use_plugin))
       );
 
-      $field_id = 'rc_google_auth';
-      $input_auth = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 35));
+      $field_id = 'rc_google_authcode';
+      $input_auth = new html_inputfield(array('name' => $field_id, 'id' => $field_id, 'size' => 45));
       $params['blocks'][$this->id]['options'][$field_id] = array(
         'title' => html::label($field_id, $this->gettext('authcode')),
-        'content' => $input_auth->show($rcmail->config->get('google_auth_key'))
+        'content' => $input_auth->show($rcmail->config->get($this->settings_key_auth_code))
       );
 
       $params['blocks'][$this->id]['options']['link'] = array(
@@ -111,8 +125,8 @@ class google_addressbook extends rcube_plugin
   function preferences_save($params)
   {
     if($params['section'] == 'addressbook') {
-      $params['prefs']['use_google_abook'] = isset($_POST['rc_use_plugin']) ? true : false;
-      $params['prefs']['google_auth_key'] = get_input_value('rc_google_auth', RCUBE_INPUT_POST);
+      $params['prefs'][$this->settings_key_use_plugin] = isset($_POST['rc_use_plugin']) ? true : false;
+      $params['prefs'][$this->settings_key_auth_code] = get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
     }
     return $params;
   }
