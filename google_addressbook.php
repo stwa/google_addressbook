@@ -13,12 +13,14 @@
 // php5-curl extension required!
 require_once(dirname(__FILE__) . '/google-api-php-client/src/Google_Client.php');
 require_once(dirname(__FILE__) . '/google_addressbook_backend.php');
+require_once(dirname(__FILE__) . '/xml_utils.php');
 
 class google_addressbook extends rcube_plugin
 {
   public $task = 'mail|addressbook|settings';
   private $abook_id = 'google_addressbook';
   private $abook_name = 'Google Addressbook';
+  private $token_settings_key = 'google_current_token';
   private $client;
 
   function init()
@@ -26,22 +28,17 @@ class google_addressbook extends rcube_plugin
     $rcmail = rcmail::get_instance();
     $this->add_texts('localization/', true);
     
+    $this->load_config('config.inc.php.dist');
+    $this->load_config('config.inc.php');
+
     $this->client = new Google_Client();
     $this->client->setApplicationName('rc-google-addressbook');
     $this->client->setScopes("http://www.google.com/m8/feeds/");
     $this->client->setClientId('983435418908-ck5ihok844ui6epea0la4akkga0g6v3o.apps.googleusercontent.com');
     $this->client->setClientSecret('YK0dxut9gqRayypORGHvDgVt');
     $this->client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
-    $this->client->setAccessType('offline');
+    $this->client->setAccessType('online');
 
-    if(isset($_SESSION['token'])) {
-      $this->client->setAccessToken($_SESSION['token']);
-    }
-    
-    $this->load_config('config.inc.php.dist');
-    $this->load_config('config.inc.php');
-
-    write_log('google_addressbook', 'init hooks');
     $this->add_hook('preferences_list', array($this, 'preferences_list'));
     $this->add_hook('preferences_save', array($this, 'preferences_save'));
     $this->add_hook('addressbooks_list', array($this, 'addressbooks_list'));
@@ -59,6 +56,20 @@ class google_addressbook extends rcube_plugin
     $this->include_script('google_addressbook.js');
   }
 
+  function get_current_token($from_db = false)
+  {
+    $prefs = rcmail::get_instance()->user->get_prefs();
+    return $prefs[$this->token_settings_key];
+  }
+  
+  function save_current_token($token)
+  {
+    $prefs = array($this->token_settings_key => $token);
+    if(!rcmail::get_instance()->user->save_prefs($prefs)) {
+      // TODO: error handling
+    }
+  }
+
   function handle_ajax_requests()
   {
     $rcmail = rcmail::get_instance();
@@ -71,7 +82,6 @@ class google_addressbook extends rcube_plugin
 
   function preferences_list($params)
   {
-    write_log('google_addressbook', 'preferences_list');
     $rcmail = rcmail::get_instance();
     if($params['section'] == 'addressbook') {
       $params['blocks'][$this->id]['name'] = $this->abook_name;
@@ -100,7 +110,6 @@ class google_addressbook extends rcube_plugin
 
   function preferences_save($params)
   {
-    write_log('google_addressbook', 'preferences_save: '.print_r($params, true));
     if($params['section'] == 'addressbook') {
       $params['prefs']['use_google_abook'] = isset($_POST['rc_use_plugin']) ? true : false;
       $params['prefs']['google_auth_key'] = get_input_value('rc_google_auth', RCUBE_INPUT_POST);
@@ -111,7 +120,6 @@ class google_addressbook extends rcube_plugin
   // roundcube collects information about available addressbooks
   function addressbooks_list($params)
   {
-    write_log('google_addressbook', 'addressbooks_list: '.print_r($params, true));
     if(true) {
       // TODO: only if plugin enabled
       $params['sources'][$this->id] = array('id' => $this->abook_id, 
@@ -126,7 +134,6 @@ class google_addressbook extends rcube_plugin
   // user opens addressbook
   function addressbook_get($params)
   {
-    write_log('google_addressbook', 'addressbook_get: '.print_r($params, true));
     $rcmail = rcmail::get_instance();
     if($params['id'] == $this->abook_id) {
       //$rcmail->output->command('enable_command', 'add', false);
@@ -135,9 +142,9 @@ class google_addressbook extends rcube_plugin
       $params['writable'] = false;
     }
 
-    if(isset($_GET['sync']))
+    if(isset($_GET['sync'])) {
       $this->google_sync_contacts();
-    //}
+    }
 
     return $params;
   }
@@ -145,22 +152,31 @@ class google_addressbook extends rcube_plugin
   function google_authenticate($code)
   { //TODO: unauth on logout
     $rcmail = rcmail::get_instance();
-    write_log('google_addressbook', 'access token: '.print_r(json_decode($this->client->getAccessToken()), true));
+
+    $token = $this->get_current_token();
+    if($token != null) {
+      $this->client->setAccessToken($token);
+    }
+
     if($this->client->getAccessToken() == null) {
       try {
         $this->client->authenticate($code);
-        $_SESSION['token'] = $this->client->getAccessToken();
+        $token = $this->client->getAccessToken();
+        $this->save_current_token($token);
       } catch(Exception $e) {
         $rcmail->output->show_message($e->getMessage(), 'error');
         return false;
       }
     } else if($this->client->isAccessTokenExpired()) {
+        // get the current tokens...
         $tokens = json_decode($this->client->getAccessToken());
-        $this->client->refreshToken($tokens->refresh_token);
-        $_SESSION['token'] = $this->client->getAccessToken();
+        $this->client->refreshToken($token->refresh_token);
+        // ... and now save the new tokens
+        $this->save_current_token($this->client->getAccessToken());
         //$rcmail->output->show_message('Expired!', 'error');
         return true;
     }
+    $this->save_current_token($token);
 
     return true;
   }
@@ -177,7 +193,7 @@ class google_addressbook extends rcube_plugin
     
     $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0';
     $val = $this->client->getIo()->authenticatedRequest(new Google_HttpRequest($feed));
-    $xml = xmlstr_to_array($val->getResponseBody());
+    $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
     $num_entries = count($xml['entry']);
     
     write_log('response', 'getting contact: '.print_r($val->getResponseBody(), true));
@@ -246,56 +262,6 @@ class google_addressbook extends rcube_plugin
     write_log('google_addressbook', 'contact_delete: '.print_r($params, true));
     // TODO: not supported right now
   }
-}
-
-function xmlstr_to_array($xmlstr) {
-  $doc = new DOMDocument();
-  $doc->loadXML($xmlstr);
-  return domnode_to_array($doc->documentElement);
-}
-
-function domnode_to_array($node) {
-  $output = array();
-  switch ($node->nodeType) {
-  case XML_CDATA_SECTION_NODE:
-  case XML_TEXT_NODE:
-  case XML_ELEMENT_NODE:
-    for ($i=0, $m=$node->childNodes->length; $i<$m; $i++) { 
-      $child = $node->childNodes->item($i);
-      $v = domnode_to_array($child);
-      if(isset($child->tagName)) {
-        $t = $child->tagName;
-        if(!isset($output[$t])) {
-          $output[$t] = array();
-        }
-        $output[$t][] = $v;
-      } elseif($v) {
-        $output = $v; //(string) $v;
-      }
-    }
-    if(is_array($output)) {
-
-      if($node->attributes->length) {
-        $a = array();
-        foreach($node->attributes as $attrName => $attrNode) {
-          $a[$attrName] = (string) $attrNode->value;
-        }
-        $output['@attributes'] = $a;
-      }
-     
-      if($node->nodeType == XML_TEXT_NODE) {
-        $output['@text'] = trim($node->textContent);
-      }
-      
-      foreach ($output as $t => $v) {
-        if(is_array($v) && count($v)==1 && $t!='@attributes') {
-          //$output[$t] = $v[0];
-        }
-      }
-    }
-    break;
-  }
-  return $output;
 }
 
 ?>
