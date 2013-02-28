@@ -199,7 +199,7 @@ class google_addressbook extends rcube_plugin
         $this->client->authenticate($code);
         $success = true;
       } else if($this->client->isAccessTokenExpired()) {
-        $tokens = json_decode($this->client->getAccessToken());
+        $token = json_decode($this->client->getAccessToken());
         if(empty($token->refresh_token)) {
           // this only happens if google client id is wrong ang access type != offline
         } else {
@@ -236,6 +236,11 @@ class google_addressbook extends rcube_plugin
     
     $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0';
     $val = $this->client->getIo()->authenticatedRequest(new Google_HttpRequest($feed));
+    if($val->getResponseHttpCode() != 200) {
+      // TODO: error
+      return;
+    }
+    
     $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
     $num_entries = count($xml['entry']);
     
