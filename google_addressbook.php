@@ -5,9 +5,9 @@
  *
  * Plugin to use google contacts in roundcube mail.
  *
- * @version 0.1
+ * @version 1.0
  * @author Stefan L. Wagner
- * @url http://roundcube.net/plugins/google_addressbook
+ * @url https://github.com/stwa/google-addressbook
  */
 
 require_once(dirname(__FILE__) . '/google-api-php-client/src/Google_Client.php');
