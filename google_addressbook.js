@@ -10,11 +10,23 @@ if (window.rcmail) {
     var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
     button.addClass('button checkmail').html(rcmail.gettext('sync', 'google_addressbook'));
     button.bind('click', function(e){ return rcmail.command('google_addressbook.sync', this); });
-  
-    rcmail.add_element(button, 'toolbar');
-    rcmail.register_button('google_addressbook.sync', 'rcmbtnsyncgoogle', 'link');
-    rcmail.register_command('google_addressbook.sync', sync_handler, true);
-    rcmail.addEventListener('plugin.google_addressbook_finished', sync_finished);
+    
+    var enabled = false;
+    if(rcmail.env.address_sources) {
+      for(var i = 0; i < rcmail.env.address_sources.length; i++) {
+        if(rcmail.env.address_sources[i].id === 'google_addressbook') {
+          enabled = true;
+          break;
+        }
+      }
+    }
+
+    if(enabled) {
+      rcmail.add_element(button, 'toolbar');
+      rcmail.register_button('google_addressbook.sync', 'rcmbtnsyncgoogle', 'link');
+      rcmail.register_command('google_addressbook.sync', sync_handler, true);
+      rcmail.addEventListener('plugin.google_addressbook_finished', sync_finished);
+    }
   });
 
   function sync_handler() {
