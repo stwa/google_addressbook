@@ -176,7 +176,8 @@ class google_addressbook extends rcube_plugin
     if($params['id'] == $this->abook_id) {
       //$rcmail->output->command('enable_command', 'add', false);
       //$rcmail->output->command('enable_command', 'import', false);
-      $params['instance'] = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
+      //$params['instance'] = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
+      $params['instance'] = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->user->ID);
       $params['writable'] = false;
     }
 
@@ -247,7 +248,8 @@ class google_addressbook extends rcube_plugin
     write_log('response', 'getting contact: '.print_r($val->getResponseBody(), true));
     $rcmail->output->show_message($num_entries.$this->gettext('contactsfound'), 'confirmation');
 
-    $backend = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
+    //$backend = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->get_user_id());
+    $backend = new google_addressbook_backend($this->abook_name, $rcmail->get_dbh(), $rcmail->user->ID);
     $backend->delete_all();
     
     foreach($xml['entry'] as $entry) {
