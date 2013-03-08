@@ -4,12 +4,10 @@
  +-----------------------------------------------------------------------+
  | sync-cli.sh                                                           |
  |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the README file for a full license statement.                     |
+ | Licensed under the GNU General Public License version 3               |
  |                                                                       |
  | PURPOSE:                                                              |
- |   Sync your google addressbook in background.                         |
+ |   Sync your google addressbook via cli.                               |
  +-----------------------------------------------------------------------+
  | Author: Stefan Wagner <stw@cannycode.de>                              |
  +-----------------------------------------------------------------------+

@@ -18,6 +18,16 @@ This plugin lets you sync your Google Addressbook in readonly mode with Roundcub
 
 *Do not forget to create the database table using the SQL from SQL/*
 
+## Command Line
+It is possible to sync the addressbooks via command line.  
+To do this, you just have to run the script "sync-cli.sh".  
+This syncs the addressbooks of all users who have enabled google addressbook plugin in their settings.  
+  
+You can also use crontab to sync the addressbooks periodically.  
+Just specify an entry like:  
+0 */4 * * * /path/to/roundcube/plugins/google_addressbook/sync-cli.sh  
+(Every 4 hours in this example)
+
 ## Todo
 * Login autosync too slow while waiting for contacts to load
 * Add possibility to revoke tokens
