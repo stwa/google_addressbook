@@ -34,7 +34,7 @@ while ($sql_result && ($sql_arr = $db->fetch_assoc($sql_result))) {
     echo "Syncing contacts for user " . $sql_arr['user_id'] . "...";
 
     $user = new rcube_user($sql_arr['user_id'], $sql_arr);
-    if(true) {//if(google_func::is_enabled($user)) {
+    if(google_func::is_enabled($user)) {
       $res = google_func::google_sync_contacts($user);
       echo $res['message']."\n";
     } else {
