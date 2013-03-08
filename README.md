@@ -3,7 +3,7 @@
 This plugin lets you sync your Google Addressbook in readonly mode with Roundcube.
 
 ## Requirements
-* Roundcube 0.9-beta [http://roundcube.net/download]
+* Roundcube >= v0.8.5 [http://roundcube.net/download]
 * PHP 5.2.x or higher [http://www.php.net/]
 * PHP Curl extension [http://www.php.net/manual/en/intro.curl.php]
 * PHP JSON extension [http://php.net/manual/en/book.json.php]
@@ -13,7 +13,7 @@ This plugin lets you sync your Google Addressbook in readonly mode with Roundcub
 > git clone https://github.com/stwa/google-addressbook google_addressbook  
 > cd google_addressbook/  
 > curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.0.tar.gz" -O  
-> tar -xvf  google-api-php-client-0.6.0.tar.gz  
+> tar -xvzf  google-api-php-client-0.6.0.tar.gz  
 > echo "$rcmail_config['plugins'][] = 'google_addressbook';" >> ../../config/main.inc.php  
 
 *Do not forget to create the database table using the SQL from SQL/*
