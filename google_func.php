@@ -63,6 +63,7 @@ class google_func
 
   static function google_authenticate($client, $user)
   {
+    $rcmail = rcmail::get_instance();
     $token = google_func::get_current_token($user);
     if($token != null) {
       $client->setAccessToken($token);
@@ -74,6 +75,9 @@ class google_func
     try {
       if($client->getAccessToken() == null) {
         $code = google_func::get_auth_code($user);
+        if(empty($code)) {
+          throw new Exception($rcmail->gettext('noauthcode', 'google_addressbook'));
+        }
         $client->authenticate($code);
         $success = true;
       } else if($client->isAccessTokenExpired()) {
@@ -113,7 +117,7 @@ class google_func
     $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0';
     $val = $client->getIo()->authenticatedRequest(new Google_HttpRequest($feed));
     if($val->getResponseHttpCode() != 200) {
-      return array('success' => false, 'message' => 'Google seems to be unavailable.');
+      return array('success' => false, 'message' => $rcmail->gettext('googleunreachable', 'google_addressbook'));
     }
     
     $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
