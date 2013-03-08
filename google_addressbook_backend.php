@@ -12,12 +12,12 @@ class google_addressbook_backend extends rcube_contacts
   private $user_id;
   private $db;
 
-  function __construct($name, $dbconn, $user)
+  function __construct($dbconn, $user)
   {
     parent::__construct($dbconn, $user);
     $this->user_id = $user;
     $this->db = $dbconn;
-    $this->name = $name;
+    $this->name = 'Google Addressbook';
     $this->readonly = true;
     $this->groups = false;
     $this->undelete = false;
