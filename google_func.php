@@ -7,7 +7,7 @@
  * @author Stefan L. Wagner
  */
 
-require_once(dirname(__FILE__) . '/google-api-php-client/src/Google_Client.php');
+require_once(dirname(__FILE__) . '/../../vendor/google/apiclient/src/Google/Client.php');
 require_once(dirname(__FILE__) . '/google_addressbook_backend.php');
 require_once(dirname(__FILE__) . '/xml_utils.php');
 
@@ -40,7 +40,7 @@ class google_func
     $prefs = $user->get_prefs();
     return $prefs[google_func::$settings_key_token];
   }
-  
+
   static function save_current_token($user, $token)
   {
     $prefs = array(google_func::$settings_key_token => $token);
@@ -71,9 +71,9 @@ class google_func
 
     $success = false;
     $msg = '';
-    
+
     try {
-      if($client->getAccessToken() == null) {
+      if($client->getAccessToken() == null || $client->getAccessToken() == '[]') {
         $code = google_func::get_auth_code($user);
         if(empty($code)) {
           throw new Exception($rcmail->gettext('noauthcode', 'google_addressbook'));
@@ -83,6 +83,7 @@ class google_func
       } else if($client->isAccessTokenExpired()) {
         $token = json_decode($client->getAccessToken());
         if(empty($token->refresh_token)) {
+          throw new Exception("Error fetching refresh token.");
           // this only happens if google client id is wrong and access type != offline
         } else {
           $client->refreshToken($token->refresh_token);
@@ -108,23 +109,25 @@ class google_func
   {
     $rcmail = rcmail::get_instance();
     $client = google_func::get_client();
- 
+
     $auth_res = google_func::google_authenticate($client, $user);
     if(!$auth_res['success']) {
       return $auth_res;
     }
-    
+
     $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0';
-    $val = $client->getIo()->authenticatedRequest(new Google_HttpRequest($feed));
-    if($val->getResponseHttpCode() != 200) {
+    $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
+    if($val->getResponseHttpCode() == 401) {
+      return array('success' => false, 'message' => "Authentication failed.");
+    } else if($val->getResponseHttpCode() != 200) {
       return array('success' => false, 'message' => $rcmail->gettext('googleunreachable', 'google_addressbook'));
     }
-    
+
     $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
-    
+
     $backend = new google_addressbook_backend($rcmail->get_dbh(), $user->ID);
     $backend->delete_all();
-    
+
     foreach($xml['entry'] as $entry) {
       //write_log('google_addressbook', 'getting contact: '.$entry['title'][0]['@text']);
       $record = array();
@@ -154,7 +157,7 @@ class google_func
           $record['phone'.$type] = $phone['@text'];
         }
       }
-      
+
       if(array_key_exists('link', $entry)) {
         foreach($entry['link'] as $link) {
           $rel = $link['@attributes']['rel'];
@@ -162,7 +165,7 @@ class google_func
           if($rel == 'http://schemas.google.com/contacts/2008/rel#photo') {
             // etag is only set if image is available
             if(isset($link['@attributes']['etag'])) {
-              $resp = $client->getIo()->authenticatedRequest(new Google_HttpRequest($href));
+              $resp = $client->getAuth()->authenticatedRequest(new Google_Http_Request($href));
               if($resp->getResponseHttpCode() == 200) {
                 $record['photo'] = $resp->getResponseBody();
               }

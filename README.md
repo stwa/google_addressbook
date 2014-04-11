@@ -12,9 +12,18 @@ This plugin lets you sync your Google Addressbook in readonly mode with Roundcub
 > cd /path/to/roundcube/plugins/  
 > git clone https://github.com/stwa/google-addressbook google_addressbook  
 > cd google_addressbook/  
-> curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.0.tar.gz" -O  
-> tar -xvzf  google-api-php-client-0.6.0.tar.gz  
 > echo "$rcmail_config['plugins'][] = 'google_addressbook';" >> ../../config/main.inc.php  
+> cd ../../
+> mkdir -p vendor/google
+> cd vendor/google/
+> curl -L "https://github.com/google/google-api-php-client/archive/1.0.4-beta.zip" -O
+> unzip 1.0.4-beta.zip 
+> mv google-api-php-client-1.0.4-beta apiclient
+
+or
+
+> Simply use Composer for installation
+> http://plugins.roundcube.net/packages/stwa/google-addressbook
 
 *Do not forget to create the database table using the SQL from SQL/*
 
