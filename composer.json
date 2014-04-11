@@ -1,0 +1,23 @@
+{
+    "name": "stwa/google-addressbook",
+    "type": "roundcube-plugin",
+    "description": "Lets you sync your Google Addressbook in readonly mode with Roundcube.",
+    "keywords": ["google","addressbook","sync"],
+    "homepage": "https://github.com/stwa/google-addressbook",
+    "license": "GPL-3.0+",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://plugins.roundcube.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.0",
+        "roundcube/plugin-installer": ">=0.1.3"
+    },
+    "extra": {
+        "roundcube": {
+            "min-version": "0.8.5"
+        }
+    }
+}
