@@ -19,6 +19,15 @@ This plugin lets you sync your Google Addressbook in readonly mode with Roundcub
 > curl -L "https://github.com/google/google-api-php-client/archive/1.0.4-beta.zip" -O  
 > unzip 1.0.4-beta.zip  
 > mv google-api-php-client-1.0.4-beta apiclient  
+> Now edit the file /path/to/roundcube/program/include/iniset.php and append $include_path with the vendor directory as follows:  
+````
+// RC include folders MUST be included FIRST to avoid other  
+// possible not compatible libraries (i.e PEAR) to be included  
+// instead the ones provided by RC  
+$include_path = INSTALL_PATH . 'program/lib' . PATH_SEPARATOR;  
+$include_path.= INSTALL_PATH . 'vendor/google/apiclient/src' . PATH_SEPARATOR;  
+[...]
+````
   
 or  
   
