@@ -3,7 +3,7 @@
 -- Name: contact_google_ids; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE contact_google_ids
+CREATE SEQUENCE contact_google_seq
     START WITH 1
     INCREMENT BY 1
     NO MAXVALUE
@@ -16,7 +16,7 @@ CREATE SEQUENCE contact_google_ids
 --
 
 CREATE TABLE contacts_google (
-    contact_id integer DEFAULT nextval('contact_google_ids'::text) PRIMARY KEY,
+    contact_id integer DEFAULT nextval('contact_google_seq'::text) PRIMARY KEY,
     user_id integer NOT NULL
         REFERENCES users (user_id) ON DELETE CASCADE ON UPDATE CASCADE,
     changed timestamp with time zone DEFAULT now() NOT NULL,
