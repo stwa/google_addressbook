@@ -13,4 +13,5 @@ $messages['done'] = 'Fertig.';
 $messages['contactsfound'] = ' Kontakt(e) gefunden.';
 $messages['noauthcode'] = 'Kein Authcode. Authentifizierung nicht möglich.';
 $messages['googleunreachable'] = 'Google ist zur Zeit nicht verfügbar. Bitte versuchen Sie es später erneut.';
+$messages['googleforbidden'] = 'Authentifizierung fehlgeschlagen!';
 ?>

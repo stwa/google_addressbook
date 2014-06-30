@@ -13,13 +13,14 @@ if (window.rcmail) {
     
     var enabled = false;
     if(rcmail.env.address_sources) {
-      for(var i = 0; i < rcmail.env.address_sources.length; i++) {
-        if(rcmail.env.address_sources[i].id === 'google_addressbook') {
+      for(var key in rcmail.env.address_sources) {
+        if(rcmail.env.address_sources[key].id === 'google_addressbook') {
           enabled = true;
           break;
         }
       }
     }
+console.log(enabled);
 
     if(enabled) {
       rcmail.add_element(button, 'toolbar');

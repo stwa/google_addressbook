@@ -24,6 +24,9 @@ class xml_utils
     case XML_CDATA_SECTION_NODE:
     case XML_TEXT_NODE:
     case XML_ELEMENT_NODE:
+      if(!$node->childNodes) {
+	return;
+      }
       for ($i=0, $m=$node->childNodes->length; $i<$m; $i++) { 
         $child = $node->childNodes->item($i);
         $v = xml_utils::domnode_to_array($child);

@@ -23,8 +23,8 @@ class google_func
     $client = new Google_Client();
     $client->setApplicationName('rc-google-addressbook');
     $client->setScopes("http://www.google.com/m8/feeds/");
-    $client->setClientId('212349955974.apps.googleusercontent.com');
-    $client->setClientSecret('7GZeYctgt3EPRz2x8i3pWfrb');
+    $client->setClientId('775403024003-e5m4h02j1hsgjj0dipef3ugbg8ee9emb.apps.googleusercontent.com');
+    $client->setClientSecret('HcRLtRTEGIqScjMpkREddO6L');
     $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
     $client->setAccessType('offline');
     return $client;
@@ -119,6 +119,8 @@ class google_func
     $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
     if($val->getResponseHttpCode() == 401) {
       return array('success' => false, 'message' => "Authentication failed.");
+    } else if($val->getResponseHttpCode() == 403) {
+      return array('success' => false, 'message' => $rcmail->gettext('googleforbidden', 'google_addressbook'));
     } else if($val->getResponseHttpCode() != 200) {
       return array('success' => false, 'message' => $rcmail->gettext('googleunreachable', 'google_addressbook'));
     }
@@ -128,18 +130,27 @@ class google_func
     $backend = new google_addressbook_backend($rcmail->get_dbh(), $user->ID);
     $backend->delete_all();
 
+    $num_entries = 0;
     foreach($xml['entry'] as $entry) {
       //write_log('google_addressbook', 'getting contact: '.$entry['title'][0]['@text']);
       $record = array();
       $name = $entry['gd:name'][0];
-      $record['name']= $name['gd:fullName'][0]['@text'];
-      $record['firstname'] = $name['gd:givenName'][0]['@text'];
-      $record['surname'] = $name['gd:familyName'][0]['@text'];
-      $record['middlename'] = $name['gd:additionalName'][0]['@text'];
+      $record['name']= trim($name['gd:fullName'][0]['@text']);
+      $record['firstname'] = trim($name['gd:givenName'][0]['@text']);
+      $record['surname'] = trim($name['gd:familyName'][0]['@text']);
+      $record['middlename'] = trim($name['gd:additionalName'][0]['@text']);
       $record['prefix'] = $name['gd:namePrefix'][0]['@text'];
       $record['suffix'] = $name['gd:nameSuffix'][0]['@text'];
       if(empty($record['name'])) {
         $record['name'] = $entry['title'][0]['@text'];
+      }
+
+      if(empty($record['name']) &&
+         empty($record['firstname']) &&
+         empty($record['surname']) &&
+         empty($record['middlename']) &&
+         !array_key_exists('gd:email', $entry)) {
+	continue;
       }
 
       if(array_key_exists('gd:email', $entry)) {
@@ -175,10 +186,11 @@ class google_func
         }
       }
 
+      $num_entries++;
+
       $backend->insert($record, false);
     }
 
-    $num_entries = count($xml['entry']);
     return array('success' => true, 'message' => $num_entries.$rcmail->gettext('contactsfound', 'google_addressbook'));
   }
 }
