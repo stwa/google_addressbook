@@ -150,7 +150,7 @@ class google_func
          empty($record['surname']) &&
          empty($record['middlename']) &&
          !array_key_exists('gd:email', $entry)) {
-	continue;
+          continue;
       }
 
       if(array_key_exists('gd:email', $entry)) {

@@ -37,7 +37,7 @@ class xml_utils
           }
           $output[$t][] = $v;
         } elseif($v) {
-          $output = $v; //(string) $v;
+          $output = $v;
         }
       }
       if(is_array($output)) {
@@ -50,7 +50,7 @@ class xml_utils
           $output['@attributes'] = $a;
         }
 
-        if($node->nodeType == XML_TEXT_NODE) {
+        if($node->nodeType == XML_ELEMENT_NODE) {
           $output['@text'] = trim($node->textContent);
         }
       
