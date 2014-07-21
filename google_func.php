@@ -7,7 +7,7 @@
  * @author Stefan L. Wagner
  */
 
-require_once(dirname(__FILE__) . '/../../vendor/google/apiclient/src/Google/Client.php');
+require_once(dirname(__FILE__) . '/../../vendor/autoload.php');
 require_once(dirname(__FILE__) . '/google_addressbook_backend.php');
 require_once(dirname(__FILE__) . '/xml_utils.php');
 
