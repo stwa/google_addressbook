@@ -157,7 +157,7 @@ class google_func
         foreach($entry['gd:email'] as $email) {
           list($rel, $type) = explode('#', $email['@attributes']['rel'], 2);
           $type = empty($type) ? '' : ':'.$type;
-          $record['email'.$type] = $email['@attributes']['address'];
+          $record['email'.$type][] = $email['@attributes']['address'];
         }
       }
 
@@ -165,7 +165,7 @@ class google_func
         foreach($entry['gd:phoneNumber'] as $phone) {
           list($rel, $type) = explode('#', $phone['@attributes']['rel'], 2);
           $type = empty($type) ? '' : ':'.$type;
-          $record['phone'.$type] = $phone['@text'];
+          $record['phone'.$type][] = $phone['@text'];
         }
       }
 
