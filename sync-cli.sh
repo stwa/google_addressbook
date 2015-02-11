@@ -29,7 +29,7 @@ $db->db_connect('w');
 if (!$db->is_connected() || $db->is_error())
     die("No DB connection\n");
 
-$sql_result = $db->query("SELECT * FROM " . $rcmail->config->get('db_table_users', 'users')." WHERE 1=1");
+$sql_result = $db->query("SELECT * FROM ".$db->table_name('users'));
 while ($sql_result && ($sql_arr = $db->fetch_assoc($sql_result))) {
     echo "Syncing contacts for user " . $sql_arr['user_id'] . "...";
 
