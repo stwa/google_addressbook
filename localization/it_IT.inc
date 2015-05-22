@@ -5,8 +5,8 @@ $labels['use'] = 'Usa ';
 $labels['autosync'] = 'Sincronizzazione automatica all\'accesso';
 $labels['authcode'] = 'Codice di autorizzazione di Google';
 $labels['authcodelink'] = 'Clicca qui per ottenere il codice di autorizzazione';
-$labels['sync'] = 'Sync Google';
-$labels['syncnow'] = 'Start Synchronisation';
+$labels['sync'] = 'Sincronizza i contatti Google';
+$labels['syncnow'] = 'Inizia la sincronizzazione';
 
 $messages = array();
 $messages['done'] = 'Fatto.';
