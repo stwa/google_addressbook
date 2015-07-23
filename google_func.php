@@ -115,7 +115,20 @@ class google_func
       return $auth_res;
     }
 
-    $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0';
+    $feed = 'https://www.google.com/m8/feeds/groups/default/full'.'?v=3.0';
+    $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
+    if($val->getResponseHttpCode() == 401) {
+      return array('success' => false, 'message' => "Authentication failed.");
+    } else if($val->getResponseHttpCode() == 403) {
+      return array('success' => false, 'message' => $rcmail->gettext('googleforbidden', 'google_addressbook'));
+    } else if($val->getResponseHttpCode() != 200) {
+      return array('success' => false, 'message' => $rcmail->gettext('googleunreachable', 'google_addressbook'));
+    }
+
+    $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
+    $gid = $xml['entry'][0]['id'][0]['@text'];
+
+    $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0'.'&group='.urlencode($gid);
     $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
     if($val->getResponseHttpCode() == 401) {
       return array('success' => false, 'message' => "Authentication failed.");
