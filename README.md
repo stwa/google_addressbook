@@ -26,6 +26,16 @@ Just specify an entry like:
 0 */4 * * * /path/to/roundcube/plugins/google_addressbook/sync-cli.sh  
 (Every 4 hours in this example)
 
+## Own Google Application
+You can register your plugin with Google to customize the application name that is presented to users when requesting access to contacts. For this, you have to register at https://console.developers.google.com/ and create a project for your roundcube installation. You get an application name, a client id and a secret. Put these values in a file named `config.inc.php` inside the `plugins/google_addressbook` folder like this:
+```
+<?php
+$config['google_addressbook_application_name'] = 'your-application-name';
+$config['google_addressbook_client_id'] = 'your-application-id';
+$config['google_addressbook_client_secret'] = 'your-application-secret';
+```
+Be aware that all existing oauth tokens will not work any more and the users have to request a new access token from Google. So you might want to do this change in a new installation only.
+
 ## Todo
 * Login autosync too slow while waiting for contacts to load
 * Add possibility to revoke tokens

@@ -20,11 +20,12 @@ class google_func
 
   static function get_client()
   {
+    $config = rcmail::get_instance()->config;
     $client = new Google_Client();
-    $client->setApplicationName('rc-google-addressbook');
+    $client->setApplicationName($config->get('google_addressbook_application_name', 'rc-google-addressbook'));
     $client->setScopes("http://www.google.com/m8/feeds/");
-    $client->setClientId('775403024003-e5m4h02j1hsgjj0dipef3ugbg8ee9emb.apps.googleusercontent.com');
-    $client->setClientSecret('HcRLtRTEGIqScjMpkREddO6L');
+    $client->setClientId($config->get('google_addressbook_client_id', '775403024003-e5m4h02j1hsgjj0dipef3ugbg8ee9emb.apps.googleusercontent.com'));
+    $client->setClientSecret($config->get('google_addressbook_client_secret', 'HcRLtRTEGIqScjMpkREddO6L'));
     $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
     $client->setAccessType('offline');
     return $client;
