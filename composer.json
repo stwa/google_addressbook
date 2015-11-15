@@ -17,8 +17,6 @@
         "google/apiclient": "1.0.4-beta"
     },
     "extra": {
-        "roundcube": {
-            "min-version": ">=0.8.5"
-        }
+        "roundcube": ">=0.8.5"
     }
 }
