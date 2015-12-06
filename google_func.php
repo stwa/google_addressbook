@@ -141,6 +141,11 @@ class google_func
 
     $xml = xml_utils::xmlstr_to_array($val->getResponseBody());
 
+    if(is_null($xml['entry'])) {
+      // When the user does not have any google contacts. Avoids PHP Warning in foreach.
+      return array('success' => true, 'message' => '0'.$rcmail->gettext('contactsfound', 'google_addressbook'));
+    }
+
     $backend = new google_addressbook_backend($rcmail->get_dbh(), $user->ID);
     $backend->delete_all();
 
