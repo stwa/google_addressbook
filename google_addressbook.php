@@ -54,7 +54,7 @@ class google_addressbook extends rcube_plugin
   {
     return google_func::get_current_token(rcmail::get_instance()->user, $from_db);
   }
-  
+
   function save_current_token($token)
   {
     return google_func::save_current_token(rcmail::get_instance()->user, $token);
@@ -72,7 +72,7 @@ class google_addressbook extends rcube_plugin
 
   function handle_ajax_requests()
   {
-    $action = get_input_value('_act', RCUBE_INPUT_GPC);
+    $action = rcube_utils::get_input_value('_act', RCUBE_INPUT_GPC);
     if($action == 'sync') {
       $this->sync_contacts();
     }
@@ -118,7 +118,7 @@ class google_addressbook extends rcube_plugin
   {
     if($params['section'] == 'addressbook') {
       $old_prefs = rcmail::get_instance()->user->get_prefs();
-      $new_code = get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
+      $new_code = rcube_utils::get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
       if($old_prefs[google_func::$settings_key_auth_code] != $new_code) {
         // token is no longer valid, so delete it
         $this->save_current_token(null);
@@ -134,10 +134,10 @@ class google_addressbook extends rcube_plugin
   function addressbooks_list($params)
   {
     if($this->is_enabled()) {
-      $params['sources'][] = array('id' => $this->abook_id, 
-                                   'name' => $this->abook_name, 
-                                   'groups' => false, 
-                                   'readonly' => true, 
+      $params['sources'][] = array('id' => $this->abook_id,
+                                   'name' => $this->abook_name,
+                                   'groups' => false,
+                                   'readonly' => true,
                                    'autocomplete' => true);
     }
     return $params;
@@ -158,9 +158,9 @@ class google_addressbook extends rcube_plugin
   function sync_contacts()
   {
     $rcmail = rcmail::get_instance();
- 
+
     $_SESSION['google_addressbook_synced'] = true;
-   
+
     $res = google_func::google_sync_contacts($rcmail->user);
     $rcmail->output->show_message($res['message'], $res['success'] ? 'confirmation' : 'error');
   }

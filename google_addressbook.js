@@ -10,7 +10,7 @@ if (window.rcmail) {
     var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
     button.addClass('button checkmail').html(rcmail.gettext('sync', 'google_addressbook'));
     button.bind('click', function(e){ return rcmail.command('google_addressbook.sync', this); });
-    
+
     var enabled = false;
     if(rcmail.env.address_sources) {
       for(var key in rcmail.env.address_sources) {
@@ -20,7 +20,6 @@ if (window.rcmail) {
         }
       }
     }
-console.log(enabled);
 
     if(enabled) {
       rcmail.add_element(button, 'toolbar');
@@ -37,6 +36,5 @@ console.log(enabled);
 
   function sync_finished(response) {
     rcmail.command('list','google_addressbook');
-    console.log(rcmail);
   }
 }
