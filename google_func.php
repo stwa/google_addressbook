@@ -22,10 +22,10 @@ class google_func
   {
     $config = rcmail::get_instance()->config;
     $client = new Google_Client();
-    $client->setApplicationName($config->get('google_addressbook_application_name', 'rc-google-addressbook'));
+    $client->setApplicationName($config->get('google_addressbook_application_name'));
     $client->setScopes('https://www.googleapis.com/auth/contacts.readonly');
-    $client->setClientId($config->get('google_addressbook_client_id', '775403024003-e5m4h02j1hsgjj0dipef3ugbg8ee9emb.apps.googleusercontent.com'));
-    $client->setClientSecret($config->get('google_addressbook_client_secret', 'HcRLtRTEGIqScjMpkREddO6L'));
+    $client->setClientId($config->get('google_addressbook_client_id'));
+    $client->setClientSecret($config->get('google_addressbook_client_secret'));
     $client->setAccessType('offline');
     if (google_func::has_redirect()){
         $redirect_url = $config->get('google_addressbook_client_redirect_url', null);
