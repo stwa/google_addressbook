@@ -1,0 +1,6 @@
+<?php
+//$config['google_addressbook_application_name'] = 'your-application-name';
+//$config['google_addressbook_client_id'] = 'your-application-id';
+//$config['google_addressbook_client_secret'] = 'your-application-secret';
+//$config['google_addressbook_client_redirect'] = true;
+//$config['google_addressbook_client_redirect_url'] = 'https://your-rc-base../?_task=settings&_action=plugin.google_addressbook.auth';

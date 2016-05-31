@@ -31,5 +31,3 @@ class google_addressbook_backend extends rcube_contacts
     return $this->db->affected_rows();
   }
 }
-
-?>
