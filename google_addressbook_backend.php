@@ -21,15 +21,13 @@ class google_addressbook_backend extends rcube_contacts
     $this->readonly = true;
     $this->groups = false;
     $this->undelete = false;
-    $this->db_name = get_table_name('contacts_google');
+    $this->db_name = $dbconn->table_name('contacts_google');
   }
 
-  function delete_all()
+  function delete_all($with_groups = false)
   {
     $query = "DELETE FROM $this->db_name WHERE user_id=?";
     $this->db->query($query, $this->user_id);
     return $this->db->affected_rows();
   }
 }
-
-?>

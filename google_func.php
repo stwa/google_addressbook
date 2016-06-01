@@ -22,13 +22,26 @@ class google_func
   {
     $config = rcmail::get_instance()->config;
     $client = new Google_Client();
-    $client->setApplicationName($config->get('google_addressbook_application_name', 'rc-google-addressbook'));
-    $client->setScopes("http://www.google.com/m8/feeds/");
-    $client->setClientId($config->get('google_addressbook_client_id', '775403024003-e5m4h02j1hsgjj0dipef3ugbg8ee9emb.apps.googleusercontent.com'));
-    $client->setClientSecret($config->get('google_addressbook_client_secret', 'HcRLtRTEGIqScjMpkREddO6L'));
-    $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
+    $client->setApplicationName($config->get('google_addressbook_application_name'));
+    $client->setScopes('https://www.googleapis.com/auth/contacts.readonly');
+    $client->setClientId($config->get('google_addressbook_client_id'));
+    $client->setClientSecret($config->get('google_addressbook_client_secret'));
     $client->setAccessType('offline');
+    if (google_func::has_redirect()){
+        $redirect_url = $config->get('google_addressbook_client_redirect_url', null);
+        if ($redirect_url == null){
+            $redirect_url = 'http'.(isset($_SERVER['HTTPS']) ? 's' : '')."://{$_SERVER['HTTP_HOST']}".parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH).'?_task=settings&_action=plugin.google_addressbook.auth';
+        }
+    }else{
+        $redirect_url = 'urn:ietf:wg:oauth:2.0:oob';
+    }
+    $client->setRedirectUri($redirect_url);
     return $client;
+  }
+
+  static function has_redirect(){
+      $config = rcmail::get_instance()->config;
+      return $config->get('google_addressbook_client_redirect', false);
   }
 
   static function get_auth_code($user) {
@@ -80,6 +93,7 @@ class google_func
           throw new Exception($rcmail->gettext('noauthcode', 'google_addressbook'));
         }
         $client->authenticate($code);
+        $msg = $rcmail->gettext('done', 'google_addressbook');
         $success = true;
       } else if($client->isAccessTokenExpired()) {
         $token = json_decode($client->getAccessToken());
@@ -88,10 +102,12 @@ class google_func
           // this only happens if google client id is wrong and access type != offline
         } else {
           $client->refreshToken($token->refresh_token);
+          $msg = $rcmail->gettext('done', 'google_addressbook');
           $success = true;
         }
       } else {
         // token valid, nothing to do.
+        $msg = $rcmail->gettext('done', 'google_addressbook');
         $success = true;
       }
     } catch(Exception $e) {
@@ -119,7 +135,7 @@ class google_func
     $feed = 'https://www.google.com/m8/feeds/groups/default/full'.'?v=3.0';
     $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
     if($val->getResponseHttpCode() == 401) {
-      return array('success' => false, 'message' => "Authentication failed.");
+      return array('success' => false, 'message' => $rcmail->gettext('googleauthfailed', 'google_addressbook'));
     } else if($val->getResponseHttpCode() == 403) {
       return array('success' => false, 'message' => $rcmail->gettext('googleforbidden', 'google_addressbook'));
     } else if($val->getResponseHttpCode() != 200) {
@@ -132,7 +148,7 @@ class google_func
     $feed = 'https://www.google.com/m8/feeds/contacts/default/full'.'?max-results=9999'.'&v=3.0'.'&group='.urlencode($gid);
     $val = $client->getAuth()->authenticatedRequest(new Google_Http_Request($feed));
     if($val->getResponseHttpCode() == 401) {
-      return array('success' => false, 'message' => "Authentication failed.");
+      return array('success' => false, 'message' => $rcmail->gettext('googleauthfailed', 'google_addressbook'));
     } else if($val->getResponseHttpCode() == 403) {
       return array('success' => false, 'message' => $rcmail->gettext('googleforbidden', 'google_addressbook'));
     } else if($val->getResponseHttpCode() != 200) {
@@ -213,5 +229,3 @@ class google_func
     return array('success' => true, 'message' => $num_entries.$rcmail->gettext('contactsfound', 'google_addressbook'));
   }
 }
-
-?>
