@@ -27,6 +27,10 @@ class google_addressbook extends rcube_plugin
     $this->load_config('config.inc.php.dist');
     $this->load_config('config.inc.php');
 
+    // register actions
+    $this->register_action('plugin.google_addressbook_auth', array($this, 'handle_auth_requests'));
+    $this->register_action('plugin.google_addressbook_sync', array($this, 'handle_sync_requests'));
+
     // register hooks
     $this->add_hook('preferences_list', array($this, 'preferences_list'));
     $this->add_hook('preferences_save', array($this, 'preferences_save'));
@@ -35,8 +39,6 @@ class google_addressbook extends rcube_plugin
     $this->add_hook('contact_create', array($this, 'contact_create'));
     $this->add_hook('contact_update', array($this, 'contact_update'));
     $this->add_hook('contact_delete', array($this, 'contact_delete'));
-    $this->register_action('plugin.google_addressbook.auth', array($this, 'handle_auth_requests'));
-    $this->register_action('plugin.google_addressbook', array($this, 'handle_ajax_requests'));
 
     // add google addressbook to autocomplete addressbooks
     $sources = (array) $rcmail->config->get('autocomplete_addressbooks', 'sql');
@@ -45,9 +47,11 @@ class google_addressbook extends rcube_plugin
 
     $this->include_script('google_addressbook.js');
 
-    if($this->is_enabled() && $this->is_autosync()
-      && !isset($_SESSION['google_addressbook_synced'])) {
-      $this->sync_contacts();
+    // only call command when in ajax action 'list'
+    if ($rcmail->output->type == 'js' && $rcmail->action == 'list') {
+      if($this->is_enabled() && $this->is_autosync() && !isset($_SESSION['google_addressbook_synced'])) {
+        $rcmail->output->command('plugin.google_addressbook_autosync', array('message' => $this->gettext('done')));
+      }
     }
   }
 
@@ -89,12 +93,9 @@ class google_addressbook extends rcube_plugin
       $rcmail->output->show_message($res['message'], $res['success'] ? 'confirmation' : 'error');
   }
 
-  function handle_ajax_requests()
+  function handle_sync_requests()
   {
-    $action = rcube_utils::get_input_value('_act', RCUBE_INPUT_GPC);
-    if($action == 'sync') {
-      $this->sync_contacts();
-    }
+    $this->sync_contacts();
     rcmail::get_instance()->output->command('plugin.google_addressbook_finished', array('message' => $this->gettext('done')));
   }
 

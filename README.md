@@ -38,12 +38,8 @@ $config['google_addressbook_client_redirect_url'] = 'https://your-rc-base..../?_
 ```
 Be aware that all existing oauth tokens will not work any more and the users have to request a new access token from Google. So you might want to do this change in a new installation only.
 
-## Todo
-* Login autosync too slow while waiting for contacts to load
-* Add possibility to revoke tokens
-
 ## Contact
-Author: Stefan Wagner (stw@cannycode.de)
+Author: Stefan Wagner (github@stwa.name)
 
 Bug reports through github:  
 https://github.com/stwa/google-addressbook/issues
