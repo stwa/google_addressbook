@@ -36,7 +36,7 @@ if (window.rcmail) {
     if(is_addressbook_view()) {
       var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
       button.addClass('button checkmail').html(rcmail.gettext('sync', 'google_addressbook'));
-      button.bind('click', function(e){ return rcmail.command('google_addressbook.sync', this); });
+      button.bind('click', function(e){ return rcmail.command('plugin.google_addressbook_sync', this); });
 
       rcmail.add_element(button, 'toolbar');
       rcmail.register_button('plugin.google_addressbook_sync', 'rcmbtnsyncgoogle', 'link');
