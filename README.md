@@ -34,7 +34,7 @@ $config['google_addressbook_application_name'] = 'your-application-name';
 $config['google_addressbook_client_id'] = 'your-application-id';
 $config['google_addressbook_client_secret'] = 'your-application-secret';
 $config['google_addressbook_client_redirect'] = true;
-$config['google_addressbook_client_redirect_url'] = 'https://your-rc-base..../?_task=settings&_action=plugin.google_addressbook.auth';
+$config['google_addressbook_client_redirect_url'] = 'https://your-rc-base..../?_task=settings&_action=plugin.google_addressbook_auth';
 ```
 Be aware that all existing oauth tokens will not work any more and the users have to request a new access token from Google. So you might want to do this change in a new installation only.
 

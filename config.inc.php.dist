@@ -5,4 +5,4 @@ $config['google_addressbook_client_secret'] = 'HcRLtRTEGIqScjMpkREddO6L';
 $config['google_addressbook_client_redirect'] = false;
 //if _redirect_url is not defined, it will autodetect when called trought web server.
 //if usage of cron is wanted, is needed to define it.
-//$config['google_addressbook_client_redirect_url'] = 'https://mail.example.com/roundcube/?_task=settings&_action=plugin.google_addressbook.auth';
+//$config['google_addressbook_client_redirect_url'] = 'https://mail.example.com/roundcube/?_task=settings&_action=plugin.google_addressbook_auth';
