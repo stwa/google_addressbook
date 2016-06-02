@@ -18,7 +18,7 @@ function is_addressbook_view() {
 
 function sync_handler() {
   var lock = rcmail.set_busy(true, 'sync');
-  rcmail.http_post('plugin.google_addressbook_sync', '', lock);
+  rcmail.http_post('plugin.google_addressbook.sync', '', lock);
 }
 
 function sync_finished(response) {
@@ -30,17 +30,17 @@ function sync_finished(response) {
 if (window.rcmail) {
   rcmail.addEventListener('init', function(evt) {
 
-    rcmail.addEventListener('plugin.google_addressbook_autosync', sync_handler);
-    rcmail.addEventListener('plugin.google_addressbook_finished', sync_finished);
+    rcmail.addEventListener('plugin.google_addressbook.autosync', sync_handler);
+    rcmail.addEventListener('plugin.google_addressbook.finished', sync_finished);
 
     if(is_addressbook_view()) {
       var button = $('<A>').attr('id', 'rcmbtnsyncgoogle').attr('href', '#');
       button.addClass('button checkmail').html(rcmail.gettext('sync', 'google_addressbook'));
-      button.bind('click', function(e){ return rcmail.command('plugin.google_addressbook_sync', this); });
+      button.bind('click', function(e){ return rcmail.command('plugin.google_addressbook.sync', this); });
 
       rcmail.add_element(button, 'toolbar');
-      rcmail.register_button('plugin.google_addressbook_sync', 'rcmbtnsyncgoogle', 'link');
-      rcmail.register_command('plugin.google_addressbook_sync', sync_handler, true);
+      rcmail.register_button('plugin.google_addressbook.sync', 'rcmbtnsyncgoogle', 'link');
+      rcmail.register_command('plugin.google_addressbook.sync', sync_handler, true);
     }
   });
 

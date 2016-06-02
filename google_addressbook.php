@@ -28,8 +28,8 @@ class google_addressbook extends rcube_plugin
     $this->load_config('config.inc.php');
 
     // register actions
-    $this->register_action('plugin.google_addressbook_auth', array($this, 'handle_auth_requests'));
-    $this->register_action('plugin.google_addressbook_sync', array($this, 'handle_sync_requests'));
+    $this->register_action('plugin.google_addressbook.auth', array($this, 'handle_auth_requests'));
+    $this->register_action('plugin.google_addressbook.sync', array($this, 'handle_sync_requests'));
 
     // register hooks
     $this->add_hook('preferences_list', array($this, 'preferences_list'));
@@ -50,7 +50,7 @@ class google_addressbook extends rcube_plugin
     // only call command when in ajax action 'list'
     if ($rcmail->output->type == 'js' && $rcmail->action == 'list') {
       if($this->is_enabled() && $this->is_autosync() && !isset($_SESSION['google_addressbook_synced'])) {
-        $rcmail->output->command('plugin.google_addressbook_autosync', array('message' => $this->gettext('done')));
+        $rcmail->output->command('plugin.google_addressbook.autosync', array('message' => $this->gettext('done')));
       }
     }
   }
@@ -96,7 +96,7 @@ class google_addressbook extends rcube_plugin
   function handle_sync_requests()
   {
     $this->sync_contacts();
-    rcmail::get_instance()->output->command('plugin.google_addressbook_finished', array('message' => $this->gettext('done')));
+    rcmail::get_instance()->output->command('plugin.google_addressbook.finished', array('message' => $this->gettext('done')));
   }
 
   function preferences_list($params)

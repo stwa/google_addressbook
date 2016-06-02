@@ -30,7 +30,7 @@ class google_func
     if (google_func::has_redirect()){
         $redirect_url = $config->get('google_addressbook_client_redirect_url', null);
         if ($redirect_url == null){
-            $redirect_url = 'http'.(isset($_SERVER['HTTPS']) ? 's' : '')."://{$_SERVER['HTTP_HOST']}".parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH).'?_task=settings&_action=plugin.google_addressbook_auth';
+            $redirect_url = 'http'.(isset($_SERVER['HTTPS']) ? 's' : '')."://{$_SERVER['HTTP_HOST']}".parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH).'?_task=settings&_action=plugin.google_addressbook.auth';
         }
     }else{
         $redirect_url = 'urn:ietf:wg:oauth:2.0:oob';
