@@ -14,4 +14,3 @@ $messages['contactsfound'] = ' znalezione kontakty.';
 $messages['noauthcode'] = 'Brak kodu autoryzacji. Autentykacja niemożliwa.';
 $messages['googleunreachable'] = 'Wydaje się, że Google seems są nieosiągalne. Spróbuj później.';
 $messages['googleforbidden'] = 'Autentykacja nie udana!';
-?>
