@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Google Addressbook Plugin for Roundcube by stwa</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Google Addressbook Plugin for Roundcube</h1>
+        <p>Sync your Google Addressbook with Roundcube.</p>
+
+        <p class="view"><a href="https://github.com/stwa/google_addressbook">View the Project on GitHub <small>stwa/google_addressbook</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/stwa/google_addressbook/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/stwa/google_addressbook/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/stwa/google_addressbook">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="google-addressbook-plugin-for-roundcube" class="anchor" href="#google-addressbook-plugin-for-roundcube" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Google Addressbook Plugin for Roundcube</h1>
+
+<p>This plugin lets you sync your Google Addressbook in readonly mode with Roundcube.</p>
+
+<p><em>Info: Initially I created this plugin for Roundcube 0.8.5, but it is still working properly with the current version of Roundcube (version 1.2.0). So yes, you can still use this plugin, it's up to date!</em></p>
+
+<h2>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Requirements</h2>
+
+<ul>
+<li>Roundcube &gt;= v0.8.5 [<a href="http://roundcube.net/download">http://roundcube.net/download</a>]</li>
+<li>PHP 5.2.x or higher [<a href="http://www.php.net/">http://www.php.net/</a>]</li>
+<li>PHP Curl extension [<a href="http://www.php.net/manual/en/intro.curl.php">http://www.php.net/manual/en/intro.curl.php</a>]</li>
+<li>PHP JSON extension [<a href="http://php.net/manual/en/book.json.php">http://php.net/manual/en/book.json.php</a>]</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Use Composer for installation:<br>
+<a href="http://plugins.roundcube.net/packages/stwa/google-addressbook">http://plugins.roundcube.net/packages/stwa/google-addressbook</a>  </p>
+
+<p><em>Do not forget to create the database table using the SQL from SQL/</em></p>
+
+<h2>
+<a id="command-line" class="anchor" href="#command-line" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Command Line</h2>
+
+<p>It is possible to sync the addressbooks via command line.<br>
+To do this, you just have to run the script "sync-cli.sh".<br>
+This syncs the addressbooks of all users who have enabled google addressbook plugin in their settings.  </p>
+
+<p>You can also use crontab to sync the addressbooks periodically.<br>
+Just specify an entry like:<br>
+0 */4 * * * /path/to/roundcube/plugins/google_addressbook/sync-cli.sh<br>
+(Every 4 hours in this example)</p>
+
+<h2>
+<a id="own-google-application" class="anchor" href="#own-google-application" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Own Google Application</h2>
+
+<p>You can register your plugin with Google to customize the application name that is presented to users when requesting access to contacts. For this, you have to register at <a href="https://console.developers.google.com/">https://console.developers.google.com/</a> and create a project for your roundcube installation. You get an application name, a client id and a secret. Ensure to allow redirect to <code>https://your-rc-base..../?_task=settings&amp;_action=plugin.google_addressbook.auth</code> when you create the Web Application credential and also store this to <code>google_addressbook_client_redirect_url</code>. Alternatively you can create an Other credential, but then disable <code>google_addressbook_client_redirect</code>. Anyhow remember to enable Contacts API for that project. Put all these values in a file named <code>config.inc.php</code> inside the <code>plugins/google_addressbook</code> folder like this:</p>
+
+<pre><code>&lt;?php
+$config['google_addressbook_application_name'] = 'your-application-name';
+$config['google_addressbook_client_id'] = 'your-application-id';
+$config['google_addressbook_client_secret'] = 'your-application-secret';
+$config['google_addressbook_client_redirect'] = true;
+$config['google_addressbook_client_redirect_url'] = 'https://your-rc-base..../?_task=settings&amp;_action=plugin.google_addressbook.auth';
+</code></pre>
+
+<p>Be aware that all existing oauth tokens will not work any more and the users have to request a new access token from Google. So you might want to do this change in a new installation only.</p>
+
+<h2>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contact</h2>
+
+<p>Author: Stefan Wagner (<a href="mailto:github@stwa.name">github@stwa.name</a>)</p>
+
+<p>Bug reports through github:<br>
+<a href="https://github.com/stwa/google-addressbook/issues">https://github.com/stwa/google-addressbook/issues</a></p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">www.gnu.org/licenses/</a>.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/stwa">stwa</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
