@@ -14,4 +14,3 @@ $messages['contactsfound'] = ' kontakt(y) nalezeny.';
 $messages['noauthcode'] = 'Není autorizační kód. Ověření není možné.';
 $messages['googleunreachable'] = 'Google se zdá být nedostupný. Prosím zkuste to později.';
 $messages['googleforbidden'] = 'Chyba ověření!';
-?>

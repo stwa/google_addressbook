@@ -15,4 +15,3 @@ $messages['noauthcode'] = 'No auth code. Authentication not possible.';
 $messages['googleauthfailed'] = 'Authentication failed.';
 $messages['googleunreachable'] = 'Google seems to be unavailable. Please try again later.';
 $messages['googleforbidden'] = 'Authentication failed!';
-?>
