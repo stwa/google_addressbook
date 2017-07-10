@@ -142,7 +142,7 @@ class google_addressbook extends rcube_plugin
     if($params['section'] == 'addressbook') {
       if (!google_func::has_redirect()){
           $old_prefs = rcmail::get_instance()->user->get_prefs();
-          $new_code = rcube_utils::get_input_value('rc_google_authcode', RCUBE_INPUT_POST);
+          $new_code = rcube_utils::get_input_value('rc_google_authcode', rcube_utils::INPUT_POST);
           if($old_prefs[google_func::$settings_key_auth_code] != $new_code) {
             // token is no longer valid, so delete it
             $this->save_current_token(null);
