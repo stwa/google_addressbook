@@ -192,19 +192,19 @@ class google_addressbook extends rcube_plugin
 
   function contact_create($params)
   {
-    write_log('google_addressbook', 'contact_create: '.print_r($params, true));
+    rcube::write_log('google_addressbook', 'contact_create: '.print_r($params, true));
     // TODO: not supported right now
   }
 
   function contact_update($params)
   {
-    write_log('google_addressbook', 'contact_update: '.print_r($params, true));
+    rcube::write_log('google_addressbook', 'contact_update: '.print_r($params, true));
     // TODO: not supported right now
   }
 
   function contact_delete($params)
   {
-    write_log('google_addressbook', 'contact_delete: '.print_r($params, true));
+    rcube::write_log('google_addressbook', 'contact_delete: '.print_r($params, true));
     // TODO: not supported right now
   }
 }
