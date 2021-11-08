@@ -9,8 +9,8 @@
 
 class google_addressbook_backend extends rcube_contacts
 {
-  private $user_id;
-  private $db;
+  protected $user_id;
+  protected $db;
 
   function __construct($dbconn, $user)
   {
